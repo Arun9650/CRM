@@ -1,6 +1,5 @@
 import type { NextAuthConfig } from "next-auth";
 import { signInSchema } from "./lib/form-schemas";
-import { compare } from "bcryptjs";
 import Credentials from "next-auth/providers/credentials";
 import prisma from "./lib/prisma";
 
@@ -10,26 +9,33 @@ export const authConfig = {
       async authorize(credentials) {
         // Validate the fields
         const validatedFields = signInSchema.safeParse(credentials);
+        console.log("🚀 ~ authorize ~ validatedFields:", validatedFields)
         if (!validatedFields.success) {
           return null;
         }
 
         // Validate that the user exists
-        const { email, password } = validatedFields.data;
-        const user = await prisma.user.findUnique({
-          where: { email },
+        const { name, password } = validatedFields.data;
+        console.log("🚀 ~ authorize ~ name:", name)
+        const user = await prisma.admindetails.findUnique({
+          where: { adminname:name },
         });
-        if (!user) {
+        console.log("🚀 ~ authorize ~ user:", user)
+        
+        if (!user || !user.password) {
           return null;
         }
 
         // Check the password
-        const isPasswordMatch = await compare(password, user.password);
+         // Compare passwords as plain strings
+         const isPasswordMatch = password === user.password;
+         console.log("🚀 ~ authorize ~ isPasswordMatch:", isPasswordMatch)
+        // const isPasswordMatch = await compare(password, user.password);
         if (!isPasswordMatch) {
           return null;
         }
 
-        return user;
+        return { id: String(user.adminid), name: user.adminname };
       },
     }),
   ],

@@ -6,9 +6,9 @@ import { redirect } from "next/navigation";
 
 export default function SignInPage() {
   const handleFormSubmit = async (formData: FormData) => {
-    const email = formData.get("email") as string;
+    const name = formData.get("name") as string;
     const password = formData.get("password") as string;
-    const res = await signInAction({ email, password });
+    const res = await signInAction({ name , password });
     if (res.error) {
       alert(res.error);
       return;
@@ -23,7 +23,7 @@ export default function SignInPage() {
       </Link>
       <form className="main-container" action={handleFormSubmit}>
         <h1 className="header-text">Sign In</h1>
-        <input name="email" type="email" placeholder="Email" />
+        <input name="name"  placeholder="name" />
         <input name="password" type="password" placeholder="Password" />
         <SubmitButton pendingText="Loggin in...">Login</SubmitButton>
         <Link className="auth-link" href="/sign-up">

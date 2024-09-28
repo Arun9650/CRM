@@ -7,10 +7,10 @@ import Link from "next/link";
 export default function SignUpPage() {
   const handleFormSubmit = async (formData: FormData) => {
     const formValues = {
-      username: formData.get("username") as string,
-      email: formData.get("email") as string,
+      adminname: formData.get("adminname") as string,
       password: formData.get("password") as string,
     };
+
 
     const { error } = await signUpSchema.safeParseAsync(formValues);
     if (error) {
@@ -39,8 +39,7 @@ export default function SignUpPage() {
         >
           Demo app, please don't use your real email or password
         </p>
-        <input name="username" type="text" placeholder="Username" />
-        <input name="email" type="email" placeholder="Email" />
+        <input name="adminname" type="text" placeholder="user" />
         <input name="password" type="password" placeholder="Password" />
         <SubmitButton pendingText="Creating account...">
           Create Account

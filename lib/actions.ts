@@ -9,7 +9,7 @@ import { redirect } from "next/navigation";
 
 export const signInAction = async (signInValues: SignInValues) => {
   try {
-    await signIn("credentials", signInValues);
+     await signIn("credentials", signInValues);
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
@@ -21,17 +21,18 @@ export const signInAction = async (signInValues: SignInValues) => {
     }
     throw error;
   }
-  redirect("/dashboard");
+  redirect("/");
 };
+
 
 export const signUpAction = async (signUpValues: SignUpValues) => {
   const { data } = await signUpSchema.safeParseAsync(signUpValues);
   if (!data) return { error: "Invalid data" };
   try {
-    await prisma.user.create({
+    await prisma.admindetails.create({
       data: {
         ...data,
-        password: hashSync(data.password, 10),
+        password: (data.password),
       },
     });
   } catch (error) {

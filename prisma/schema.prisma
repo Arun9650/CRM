@@ -1,46 +1,65 @@
+// prisma/schema.prisma
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "mongodb"
-  url      = env("DATABASE_URL")
+  provider = "mysql" // Assuming you're using MySQL via phpMyAdmin
+  url      = env("DATABASE_URL") // Replace with your MySQL connection string in .env
 }
 
-
-
-model User {
-  id            String         @id @default(auto()) @map("_id") @db.ObjectId
-  username      String
-  email         String         @unique
-  password      String
-  image         String?
-  accounts      Account[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Admindetails {
+  adminid   Int     @id @default(autoincrement())
+  adminname String? @db.VarChar(50) @unique
+  password  String? @db.VarChar(50)
 }
- 
-model Account {
-  id                String  @id @default(auto()) @map("_id") @db.ObjectId
-  userId            String  @db.ObjectId
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String? @db.String
-  access_token      String? @db.String
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String? @db.String
-  session_state     String?
- 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
- 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
-  @@unique([provider, providerAccountId])
+
+model EmpDetails {
+  empid       Int               @id @default(autoincrement())
+  empname     String?           @db.VarChar(50)
+  empphoneno  String?           @db.VarChar(11)
+  empusername String?           @unique @db.VarChar(50)
+  emppassword String?           @db.VarChar(50)
+  empemailid  String?           @db.VarChar(50)
+  Status      String?           @db.VarChar(50)
+  enquiries   EnquiryDetails[]  // One-to-many relationship with EnquiryDetails
+  enquiryLogs EnquiryLogs[]     // One-to-many relationship with EnquiryLogs
 }
- 
+
+model EnquiryDetails {
+  enquiryid   Int      @id @default(autoincrement())
+  custname    String?  @db.VarChar(50)
+  custphoneno String?  @db.VarChar(11)
+  custemailid String?  @db.VarChar(50)
+  custaddress String?  @db.VarChar(100)
+  latitude    String?  @db.VarChar(100)
+  longitude   String?  @db.VarChar(100)
+  entrytime   DateTime?
+  empid       Int?
+  empname     String?  @db.VarChar(50)
+  DOB         DateTime?
+
+  // Foreign key relation with EmpDetails
+  EmpDetails  EmpDetails? @relation(fields: [empid], references: [empid], onDelete: Cascade)
+
+  EnquiryLogs EnquiryLogs[]
+}
+
+model EnquiryLogs {
+  enquirylogid Int      @id @default(autoincrement())
+  custname     String?  @db.VarChar(50)
+  custphoneno  String?  @db.VarChar(11)
+  custemailid  String?  @db.VarChar(50)
+  custaddress  String?  @db.VarChar(100)
+  latitude     String?  @db.VarChar(100)
+  longitude    String?  @db.VarChar(100)
+  entrytime    DateTime?
+  enquiryid    Int?
+  empid        Int?
+  empname      String?  @db.VarChar(50)
+
+  // Foreign key relations
+  EnquiryDetails EnquiryDetails? @relation(fields: [enquiryid], references: [enquiryid], onDelete: Cascade)
+  EmpDetails     EmpDetails?     @relation(fields: [empid], references: [empid], onDelete: Cascade)
+}
