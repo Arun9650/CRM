@@ -36,6 +36,8 @@ export default function UserTable() {
   const router = useRouter();
 
   const { data: session, status } = useSession(); // Use session and status from NextAuth
+  console.log("🚀 ~ UserTable ~ status:", status)
+  console.log("🚀 ~ UserTable ~ session:", session)
   const [users, setUsers] = useState<employee[]>([]); // State to hold user data
   const [currentPage, setCurrentPage] = useState(1); // State to manage current page
   const [totalUsers, setTotalUsers] = useState(0); // Total number of users
@@ -110,6 +112,7 @@ export default function UserTable() {
 
   // Load data on page load and page change
   useEffect(() => {
+    router.refresh()
     if (status === "authenticated") {
       fetchUsers(currentPage); // Fetch users when session is authenticated
     }
