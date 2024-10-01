@@ -15,15 +15,16 @@ const DesktopNav = () => {
   return (
     <aside className="inset-y-0 left-0 z-10 hidden w-72 flex-col border-r bg-background sm:flex">
       <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
-        <Image
+        {/* <Image
           src="https://res.cloudinary.com/dga7phidh/image/upload/v1727343700/WhatsApp_Image_2024-09-25_at_20.47.59_9ded0a5f_de6zz7.jpg"
           alt="beestar"
           width={50}
           height={50}
           className="rounded-full"
          
-        />
-          
+        /> */}
+
+  <p className="font-bold  text-xl">Admin</p>          
  
 
         {navItems.map((item, index) => (
@@ -58,15 +59,16 @@ const MobileNav = () => {
 
       <SheetContent side="left" className="sm:max-w-xs bg-white">
         <nav className="grid gap-6 text-lg font-medium">
-        <Image
+        {/* <Image
           src="https://res.cloudinary.com/dga7phidh/image/upload/v1727343700/WhatsApp_Image_2024-09-25_at_20.47.59_9ded0a5f_de6zz7.jpg"
           alt="beestar"
           width={50}
           height={50}
           className="rounded-full"
          
-        />
-          
+        /> */}
+
+<p className="font-bold  text-xl">Admin</p>               
 
           {navItems.map((item, index) => (
             <SheetClose   asChild  key={index}>
