@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 
-export const  formSchema = z.object({
+const  formSchema = z.object({
 	EmployeeName: z
 		.string()
 		.min(2, { message: 'Employee Name must be at least 2 characters.' }),
