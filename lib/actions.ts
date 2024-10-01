@@ -2,7 +2,6 @@
 import { SignInValues, SignUpValues, signUpSchema } from "./form-schemas";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { AuthError } from "next-auth";
-import { hashSync } from "bcryptjs";
 import { signIn } from "@/auth";
 import prisma from "./prisma";
 import { redirect } from "next/navigation";

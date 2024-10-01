@@ -18,7 +18,7 @@ export default auth((req) => {
       // if the user is already logged in and is in sign-in or sign-up page
       // redirect to the default logged in page (which is dashboard in this case)
       console.log("redirecting to dashboard");
-      return NextResponse.redirect(new URL("/dashboard", nextUrl));
+      return NextResponse.redirect(new URL("/", nextUrl));
     }
     // if the user is not logged in and is in sign-in or sign-up page, let them be
     return;
