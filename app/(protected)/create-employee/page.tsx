@@ -17,6 +17,9 @@ import {
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
+import Confetti from 'react-confetti'
+import useWindowSize from 'react-use/lib/useWindowSize'
+
 
 const  formSchema = z.object({
 	EmployeeName: z
@@ -40,6 +43,8 @@ const  formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export default function AddCardForm() {
+	
+	const { width, height } = useWindowSize()
 	const form = useForm<FormValues>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
@@ -53,9 +58,8 @@ export default function AddCardForm() {
 	});
 	const [cards, setCards] = useState([]); // State to store cards
 	const [isCardSelected, setIsCardSelected] = useState(false);
-	const [showConfetti, setShowConfetti] = useState(false); // State to manage confetti
 	const [isLoading, setIsLoading] = useState(false);
-
+	const [showConfetti, setShowConfetti] = useState(false);
 	
 
 	async function onSubmit(values: FormValues) {
@@ -66,7 +70,7 @@ export default function AddCardForm() {
 		const apiEndpoint = '/api/employee/create';
 
 
-        await fetch(apiEndpoint, {
+       const res =  await fetch(apiEndpoint, {
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -74,26 +78,23 @@ export default function AddCardForm() {
             body: JSON.stringify(values),
         })
 
-		// await axios
-		// 	.post(apiEndpoint, values, {
-		// 		headers: {
-		// 			'Content-Type': 'application/json',
-		// 		},
-		// 		// withCredentials: true,
-		// 	})
-		// 	.then((response) => {
-		// 		console.log(response.data);
-		// 		alert('Employee added successfully');
-		// 	})
-		// 	.catch((error) => {
-		// 		console.error(error);
-		// 		alert('Something went wrong. Please try again.');
-		// 	});
+		if(res.ok){
+			setShowConfetti(true);
+		}
 
 		setIsLoading(false);
 	}
 
 	return (
+		<div className='z-50'>
+			{<Confetti
+	width={width}
+	height={height}
+	recycle={false}
+	run={showConfetti}
+	
+    />
+}
 		<Card className="p-6 rounded-xl">
 			<Form {...form}>
 				<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -109,7 +110,7 @@ export default function AddCardForm() {
 								<FormMessage />
 							</FormItem>
 						)}
-					/>
+						/>
 
 					<FormField
 						control={form.control}
@@ -169,7 +170,7 @@ export default function AddCardForm() {
 								<FormMessage />
 							</FormItem>
 						)}
-					/>
+						/>
 
 					<FormField
 						control={form.control}
@@ -182,7 +183,7 @@ export default function AddCardForm() {
 										type="password"
 										placeholder="Employee Password"
 										{...field}
-									/>
+										/>
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -201,7 +202,7 @@ export default function AddCardForm() {
 								<FormMessage />
 							</FormItem>
 						)}
-					/>
+						/>
 
 					<Button type="submit" disabled={isLoading} className="w-40">
 						{isLoading ? (
@@ -213,5 +214,6 @@ export default function AddCardForm() {
 				</form>
 			</Form>
 		</Card>
+						</div>
 	);
 }

@@ -36,8 +36,6 @@ export default function UserTable() {
   const router = useRouter();
 
   const { data: session, status } = useSession(); // Use session and status from NextAuth
-  console.log("🚀 ~ UserTable ~ status:", status)
-  console.log("🚀 ~ UserTable ~ session:", session)
   const [users, setUsers] = useState<employee[]>([]); // State to hold user data
   const [currentPage, setCurrentPage] = useState(1); // State to manage current page
   const [totalUsers, setTotalUsers] = useState(0); // Total number of users
@@ -60,7 +58,6 @@ export default function UserTable() {
     });
 
     const data = await res.json();
-    console.log("🚀 ~ fetchUsers ~ data:", data)
     setUsers(data.data);
     setTotalUsers(data.pagination.totalRecords);
     setUserWithMostPoints(data.topEmployee);
@@ -69,7 +66,7 @@ export default function UserTable() {
 
   const handleDelete = async ({ empid }: { empid: number }) => {
     try {
-      const response = await axios.get(`/api/file`);
+      await axios.delete(`/api/employee/${empid}`);
       alert("Employee deleted successfully");
       fetchUsers(currentPage); // Fetch users
     } catch (error) {
