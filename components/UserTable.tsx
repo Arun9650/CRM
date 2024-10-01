@@ -112,10 +112,13 @@ export default function UserTable() {
 
   // Load data on page load and page change
   useEffect(() => {
-    router.refresh()
     if (status === "authenticated") {
+
       fetchUsers(currentPage); // Fetch users when session is authenticated
     }
+   if(status === "unauthenticated"){
+      window.location.reload();
+   }
   }, [currentPage, status]);
 
   // Calculate total pages
