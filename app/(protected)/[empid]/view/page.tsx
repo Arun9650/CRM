@@ -2,7 +2,18 @@
 import { useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input'; // Import the shadcn/ui Input component
 import { Button } from '@/components/ui/button';
-
+import EditEnquiryDialog from '@/components/EditEnquiryDialog';
+import {
+	AlertDialog,
+	AlertDialogTrigger,
+	AlertDialogContent,
+	AlertDialogHeader,
+	AlertDialogFooter,
+	AlertDialogTitle,
+	AlertDialogDescription,
+	AlertDialogCancel,
+	AlertDialogAction,
+} from "@/components/ui/alert-dialog"; 
 // Define types for Employee and Enquiry
 interface Employee {
   empid: number;
@@ -37,6 +48,7 @@ interface EmployeeDetailsPageProps {
 }
 
 const EmployeeDetailsPage: React.FC<EmployeeDetailsPageProps> = ({ params }) => {
+  
   const { empid } = params; // Dynamic route param
   const [employee, setEmployee] = useState<Employee | null>(null);
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
@@ -66,10 +78,11 @@ const EmployeeDetailsPage: React.FC<EmployeeDetailsPageProps> = ({ params }) => 
 
 
       // Function to open the map with the employee's location
-  const openMap = (latitude: string, longitude: string) => {
-    const mapUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
-    window.open(mapUrl, "_blank"); // Open Google Maps in a new tab
-  };
+      const openMap = (latitude: string, longitude: string) => {
+        const mapUrl = `https://www.google.com/maps?q=${latitude},${longitude}&ll=${latitude},${longitude}&z=15`;
+        window.open(mapUrl, "_blank"); // Open Google Maps in a new tab
+      };
+      
 
 
 
@@ -130,6 +143,54 @@ const EmployeeDetailsPage: React.FC<EmployeeDetailsPageProps> = ({ params }) => 
       setLoadingSearch(false);
     }
   };
+
+  const editEnquiry = async (enquiryid: number, updatedData: Partial<Enquiry>) => {
+    try {
+      const response = await fetch(`/api/employee/${empid}/enquiries/${enquiryid}/`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedData),
+      });
+  
+      const result = await response.json();
+      if (response.ok) {
+        alert('Enquiry updated successfully');
+        // Optionally, refresh the enquiries or update the state
+      } else {
+        alert(result.message || 'Failed to update enquiry');
+      }
+    } catch (error) {
+      console.error('Error updating enquiry:', error);
+      alert('An error occurred while updating the enquiry.');
+    }
+  };
+  const handleDelete = async (enquiryid: number) => {
+    try {
+      const response = await fetch(`/api/employee/${empid}/enquiries/${enquiryid}/`, {
+        method: 'Delete',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+  
+      const result = await response.json();
+      if (response.ok) {
+       await fetchEmployeeAndEnquiries(empid);
+        alert('Enquiry updated successfully');
+        
+        // Optionally, refresh the enquiries or update the state
+      } else {
+        alert(result.message || 'Failed to update enquiry');
+      }
+    } catch (error) {
+      console.error('Error updating enquiry:', error);
+      alert('An error occurred while updating the enquiry.');
+    }
+  };
+
+  
 
   // Filter enquiries based on the search term
   const filteredEnquiries = enquiries.filter((enquiry) =>
@@ -199,6 +260,8 @@ const EmployeeDetailsPage: React.FC<EmployeeDetailsPageProps> = ({ params }) => 
                   <th className="px-4 py-2">Address</th>
                   <th className="px-4 py-2">Entry Time</th>
                   <th className="px-4 py-2"> </th>
+                  <th className="px-4 py-2"> </th>
+                  <th className="px-4 py-2"> </th>
                 </tr>
               </thead>
               <tbody>
@@ -207,11 +270,43 @@ const EmployeeDetailsPage: React.FC<EmployeeDetailsPageProps> = ({ params }) => 
                     <td className="px-4 py-2">{enquiry.enquiryid}</td>
                     <td className="px-4 py-2  text-nowrap">{enquiry.custname}</td>
                     <td className="px-4 py-2 text-nowrap">{enquiry.custphoneno}</td>
-                    <td className="px-4 py-2 text-nowrap">{enquiry.custemailid}</td>
+                    <td className="px-4 py-2 text-nowrap overflow-y-auto max-w-40">{enquiry.custemailid}</td>
                     <td className="px-4 py-2 overflow-y-auto text-nowrap max-w-40">{enquiry.custaddress}</td>
                     <td className="px-4 py-2 overflow-y-auto text-nowrap ">{new Date(enquiry.entrytime).toLocaleString()}</td>
                     <td>
                       <Button onClick={() => {  openMap(enquiry.latitude, enquiry.longitude)}} className='bg-blue-500 hover:bg-blue-300'>Map</Button>
+
+                    </td>
+                    <td className='px-2'>
+
+                    <EditEnquiryDialog
+          enquiry={enquiry}
+          onSave={(updatedData) => editEnquiry(enquiry.enquiryid, updatedData)}
+        />
+                    </td>
+                    <td>
+
+                   {/* Delete Button with AlertDialog */}
+                   <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button className="bg-red-500 hover:bg-red-400" >
+                          Delete
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete the employee.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={ () => handleDelete(enquiry.enquiryid)}>Yes, Delete</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+
                     </td>
                   </tr>
                 ))}

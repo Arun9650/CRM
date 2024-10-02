@@ -1,48 +1,57 @@
-// /app/dashboard/components/UserTable.tsx
 "use client";
 
 import { useEffect, useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Card, CardTitle } from "./ui/card";
+import { Card, CardTitle } from "@/components/ui/card";
 import { useSession } from "next-auth/react"; // Import useSession from NextAuth
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import {
+	AlertDialog,
+	AlertDialogTrigger,
+	AlertDialogContent,
+	AlertDialogHeader,
+	AlertDialogFooter,
+	AlertDialogTitle,
+	AlertDialogDescription,
+	AlertDialogCancel,
+	AlertDialogAction,
+} from "@/components/ui/alert-dialog"; // Import AlertDialog components from Shadcn
 
 const pageSize = 10; // Number of users per page
 
 type employee = {
+  empid: number,
+  empname: string,
+  empphoneno: string,
+  empusername: string,
+  emppassword: string,
+  empemailid: string,
+  Status: string
+}
 
+type topEmployee = {
   empid: number,
   empname: string,
   empphoneno: string,
   empusername: string,
   emppassword: string,
-  empemailid:string,
-  Status: string
+  empemailid: string,
+  Status: string,
+  _count: { enquiries: number }
 }
-type  topEmployee = {
-  empid: number,
-  empname: string,
-  empphoneno: string,
-  empusername: string,
-  emppassword: string,
-  empemailid:string,
-  Status: string
-  _count: { enquiries: 11 }
-}
+
 export default function UserTable() {
-
   const router = useRouter();
-
   const { data: session, status } = useSession(); // Use session and status from NextAuth
   const [users, setUsers] = useState<employee[]>([]); // State to hold user data
   const [currentPage, setCurrentPage] = useState(1); // State to manage current page
   const [totalUsers, setTotalUsers] = useState(0); // Total number of users
-  const [userWithMostPoints, setUserWithMostPoints] = useState<topEmployee>(); // User with most points
+  const [userWithMostPoints, setUserWithMostPoints] = useState<topEmployee | null>(null); // User with most points
   const [isLoading, setIsLoading] = useState(false); // Loading state
+  const [empToDelete, setEmpToDelete] = useState<number | null>(null); // State for storing the employee ID to delete
 
- 
   // Fetch user data based on the current page
   const fetchUsers = async (page: number) => {
     if (!session) return; // If no session, return early
@@ -51,71 +60,72 @@ export default function UserTable() {
     const res = await fetch(`/api/employee?page=${page}&limit=${pageSize}`, {
       headers: {
         contentType: "application/json",
-        // Authorization: `Bearer ${sessionStorage.getItem("token")}`, // Add session token here if necessary
-      },
-      credentials: "include", // Include credentials
-      cache: 'no-store',
+        credentials: "include",
+        cache: 'no-store',
+      }
     });
 
     const data = await res.json();
     setUsers(data.data);
     setTotalUsers(data.pagination.totalRecords);
-    setUserWithMostPoints(data.topEmployee);
+    setUserWithMostPoints(data.topEmployee || null);
     setIsLoading(false);
   };
 
-  const handleDelete = async ({ empid }: { empid: number }) => {
+  const handleDelete = async () => {
+    if (empToDelete === null) return;
+
     try {
-      await axios.delete(`/api/employee/${empid}`);
+      await axios.delete(`/api/employee/${empToDelete}`);
       alert("Employee deleted successfully");
       fetchUsers(currentPage); // Fetch users
     } catch (error) {
       console.error("Error deleting employee:", error);
       alert("Failed to delete employee");
+    } finally {
+      setEmpToDelete(null); // Reset after deletion
     }
   };
+
   const handleReport = async ({ empid }: { empid: number }) => {
     try {
-      const response = await axios.get(`/api/file/${empid}`, { responseType: 'blob', });
+      const response = await axios.get(`/api/file/${empid}`, { responseType: 'blob' });
 
-    
-    // Create a Blob from the response
-    const blob = new Blob([response.data], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    });
+      // Create a Blob from the response
+      const blob = new Blob([response.data], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
 
-    // Create a URL for the Blob
-    const url = window.URL.createObjectURL(blob);
+      // Create a URL for the Blob
+      const url = window.URL.createObjectURL(blob);
 
-    // Create a temporary <a> element to trigger the download
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `employee_${empid}_data.xlsx`); // Specify the file name
+      // Create a temporary <a> element to trigger the download
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `employee_${empid}_data.xlsx`); // Specify the file name
 
-    // Append the <a> element to the body, trigger the click, and remove it afterward
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      // Append the <a> element to the body, trigger the click, and remove it afterward
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
 
-    // Clean up the URL object
-    window.URL.revokeObjectURL(url);
-    fetchUsers(currentPage); // Fetch users
-    
+      // Clean up the URL object
+      window.URL.revokeObjectURL(url);
+      fetchUsers(currentPage); // Fetch users
     } catch (error) {
-      console.error("Error deleting employee:", error);
-      alert("Failed to delete employee");
+      console.error("Error downloading report:", error);
+      alert("Failed to generate report");
     }
   };
 
   // Load data on page load and page change
   useEffect(() => {
     if (status === "authenticated") {
-
       fetchUsers(currentPage); // Fetch users when session is authenticated
     }
-   if(status === "unauthenticated"){
+    if (status === "unauthenticated") {
       window.location.reload();
-   }
+    }
   }, [currentPage, status]);
 
   // Calculate total pages
@@ -140,19 +150,14 @@ export default function UserTable() {
     <div className="">
       <div className="flex flex-col sm:flex-row w-full justify-between gap-3">
         <Card className="p-4 sm:p-8 text-center">
-          <CardTitle>Total User: {totalUsers}</CardTitle>
+          <CardTitle>Total Users: {totalUsers}</CardTitle>
         </Card>
         <Card className="p-4 flex flex-col sm:flex-row items-center gap-2 sm:gap-8">
-          <CardTitle>User With Most Enquiries </CardTitle>
+          <CardTitle>User With Most Enquiries</CardTitle>
           <div className="flex flex-col sm:flex-row gap-1 sm:gap-4">
-          <div>
-          Name : {userWithMostPoints?.empname}
-        </div>
-        <div>
-
-        Enquiries : {userWithMostPoints?._count.enquiries} 
-        </div>
-          Phone no. : {userWithMostPoints?.empphoneno}
+            <div>Name: {userWithMostPoints?.empname}</div>
+            <div>Enquiries: {userWithMostPoints?._count.enquiries}</div>
+            <div>Phone no.: {userWithMostPoints?.empphoneno}</div>
           </div>
         </Card>
       </div>
@@ -164,8 +169,8 @@ export default function UserTable() {
             <TableRow>
               <TableHead>ID</TableHead>
               <TableHead>Name</TableHead>
-              <TableHead>email</TableHead>
-              <TableHead>phone No.</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Phone No.</TableHead>
               <TableHead className="text-right"></TableHead>
               <TableHead className="text-right"></TableHead>
             </TableRow>
@@ -182,12 +187,32 @@ export default function UserTable() {
                   <TableCell>{user.empname}</TableCell>
                   <TableCell>{user.empemailid}</TableCell>
                   <TableCell>{user.empphoneno}</TableCell>
-                  <TableCell className="text-right flex  items-center gap-2 justify-end ">
-                    <Button onClick={() => router.push(`/${user.empid}/view`)} >View</Button>
-                  
-                    <Button onClick={() => router.push(`/${user.empid}`)} className="bg-blue-500 hover:bg-blue-400">Edit</Button>  
-                    <Button onClick={() => handleDelete({ empid: user.empid })} className="bg-red-500 hover:bg-red-400"  >Delete</Button>
-                    <Button onClick={() => handleReport({ empid: user.empid })} className="bg-red-500 hover:bg-red-400"  >Report</Button>
+                  <TableCell className="text-right flex items-center gap-2 justify-end">
+                    <Button onClick={() => router.push(`/${user.empid}/view`)}>View</Button>
+                    <Button onClick={() => router.push(`/${user.empid}`)} className="bg-blue-500 hover:bg-blue-400">Edit</Button>
+                    
+                    {/* Delete Button with AlertDialog */}
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button className="bg-red-500 hover:bg-red-400" onClick={() => setEmpToDelete(user.empid)}>
+                          Delete
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete the employee.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleDelete}>Yes, Delete</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+
+                    <Button onClick={() => handleReport({ empid: user.empid })} className="bg-green-500 hover:bg-green-400">Report</Button>
                   </TableCell>
                 </TableRow>
               ))
