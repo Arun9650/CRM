@@ -44,7 +44,7 @@ type topEmployee = {
 
 export default function UserTable() {
   const router = useRouter();
-  const { data: session, status } = useSession(); // Use session and status from NextAuth
+  const { data: session, status , update} = useSession(); // Use session and status from NextAuth
   const [users, setUsers] = useState<employee[]>([]); // State to hold user data
   const [currentPage, setCurrentPage] = useState(1); // State to manage current page
   const [totalUsers, setTotalUsers] = useState(0); // Total number of users
@@ -120,12 +120,18 @@ export default function UserTable() {
 
   // Load data on page load and page change
   useEffect(() => {
+   const fetch = async () => {
     if (status === "authenticated") {
       fetchUsers(currentPage); // Fetch users when session is authenticated
     }
     if (status === "unauthenticated") {
-      window.location.reload();
+      console.log('this run ')
+      // window.location.reload();
+      // await  update()
+      router.push("/sign-in")
     }
+   }
+   fetch();
   }, [currentPage, status]);
 
   // Calculate total pages

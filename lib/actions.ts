@@ -9,6 +9,7 @@ import { redirect } from "next/navigation";
 export const signInAction = async (signInValues: SignInValues) => {
   try {
      await signIn("credentials", signInValues);
+     return { success: true };
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
@@ -20,7 +21,6 @@ export const signInAction = async (signInValues: SignInValues) => {
     }
     throw error;
   }
-  redirect("/");
 };
 
 
