@@ -18,6 +18,7 @@ import {
 	AlertDialogCancel,
 	AlertDialogAction,
 } from "@/components/ui/alert-dialog"; // Import AlertDialog components from Shadcn
+import { Edit, Eye, FileText, Mail, Phone, Star, Trash, Users } from "lucide-react";
 
 const pageSize = 10; // Number of users per page
 
@@ -51,6 +52,8 @@ export default function UserTable() {
   const [userWithMostPoints, setUserWithMostPoints] = useState<topEmployee | null>(null); // User with most points
   const [isLoading, setIsLoading] = useState(false); // Loading state
   const [empToDelete, setEmpToDelete] = useState<number | null>(null); // State for storing the employee ID to delete
+  const [totalEnquiries, setTotalEnquiries] = useState(0); // Total number of enquiries
+  const [activeUser, setActiveUser] = useState(0)
 
   // Fetch user data based on the current page
   const fetchUsers = async (page: number) => {
@@ -70,6 +73,8 @@ export default function UserTable() {
     setTotalUsers(data.pagination.totalRecords);
     setUserWithMostPoints(data.topEmployee || null);
     setIsLoading(false);
+    setTotalEnquiries(data.totalEnquiries)
+    setActiveUser(data.activeUsersCount)
   };
 
   const handleDelete = async () => {
@@ -155,30 +160,91 @@ export default function UserTable() {
   return (
     <div className="">
       <div className="flex flex-col sm:flex-row w-full justify-between gap-3">
-        <Card className="p-4 sm:p-8 text-center">
-          <CardTitle>Total Users: {totalUsers}</CardTitle>
-        </Card>
-        <Card className="p-4 flex flex-col sm:flex-row items-center gap-2 sm:gap-8">
-          <CardTitle>User With Most Enquiries</CardTitle>
-          <div className="flex flex-col sm:flex-row gap-1 sm:gap-4">
-            <div>Name: {userWithMostPoints?.empname}</div>
-            <div>Enquiries: {userWithMostPoints?._count.enquiries}</div>
-            <div>Phone no.: {userWithMostPoints?.empphoneno}</div>
-          </div>
-        </Card>
+      <div className="bg-white w-full overflow-hidden shadow rounded-lg">
+              <div className="px-4 py-5 sm:p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0 bg-indigo-500 rounded-md p-3">
+                    <Users className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="ml-5  flex-1">
+                    <dl>
+                      <dt className="text-sm font-medium text-gray-500 truncate">Total Users</dt>
+                      <dd className="text-3xl font-semibold text-gray-900">{users.length}</dd>
+                    </dl>
+                  </div>
+                </div>
+                <div className="mt-5">
+                  <div className="flex gap-4 justify-start text-sm text-gray-600">
+                    <div>Total Enquiries:</div>
+                    <div>{totalEnquiries}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+      <div className="bg-white w-full overflow-hidden shadow rounded-lg">
+              <div className="px-4 py-5 sm:p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0 bg-indigo-500 rounded-md p-3">
+                    <Users className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="ml-5  flex-1">
+                    <dl>
+                      <dt className="text-sm font-medium text-gray-500 truncate">Total Users With Active Status</dt>
+                      <dd className="text-3xl font-semibold text-gray-900">{activeUser}</dd>
+                    </dl>
+                  </div>
+                </div>
+                {/* <div className="mt-5">
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <div>Total Enquiries:</div>
+                    <div>{totalEnquiries}</div>
+                  </div>
+                </div> */}
+              </div>
+            </div>
+
+          <div className="bg-white w-full overflow-hidden shadow rounded-lg">
+              <div className="px-4 py-5 sm:p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0 bg-green-500 rounded-md p-3">
+                    <Star className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="ml-5 flex-1">
+                    <dl>
+                      <dt className="text-sm font-medium text-gray-500 truncate">User With Most Enquiries</dt>
+                      <dd className="text-2xl font-semibold text-gray-900">{userWithMostPoints?.empname}</dd>
+                    </dl>
+                  </div>
+                </div>
+                <div className="mt-5 flex items-center justify-between">
+                  {/* <div className="flex items-center text-sm text-gray-600 mt-2">
+                    <Mail className="h-4 w-4 mr-2" />
+                    <div>{userWithMostEnquiries.email}</div>
+                  </div> */}
+                  <div className="flex items-center text-sm text-gray-600 mt-2">
+                    <Phone className="h-4 w-4 mr-2" />
+                    <div> {userWithMostPoints?.empphoneno}</div>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600 mt-2">
+                    <FileText className="h-4 w-4 mr-2" />
+                    <div>Enquiries: {userWithMostPoints?._count.enquiries}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+  
       </div>
 
-      <div className="p-6 bg-white rounded-lg shadow-md">
+      <div className="p-6 mt-4 bg-white rounded-lg shadow-md">
         <h1 className="text-xl font-bold mb-4">Users</h1>
         <Table>
           <TableHeader>
-            <TableRow>
+            <TableRow className="uppercase text-xs text-gray-500 ">
               <TableHead>ID</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Phone No.</TableHead>
-              <TableHead className="text-right"></TableHead>
-              <TableHead className="text-right"></TableHead>
+              <TableHead className="text-center border">ACTIONS</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -188,21 +254,23 @@ export default function UserTable() {
               </TableRow>
             ) : users.length > 0 ? (
               users.map((user) => (
-                <TableRow key={user.empid}>
+                <TableRow key={user.empid} className="whitespace-nowrap text-sm text-gray-900">
                   <TableCell>{user.empid}</TableCell>
                   <TableCell>{user.empname}</TableCell>
                   <TableCell>{user.empemailid}</TableCell>
                   <TableCell>{user.empphoneno}</TableCell>
-                  <TableCell className="text-right flex items-center gap-2 justify-end">
-                    <Button onClick={() => router.push(`/${user.empid}/view`)}>View</Button>
-                    <Button onClick={() => router.push(`/${user.empid}`)} className="bg-blue-500 hover:bg-blue-400">Edit</Button>
+                  <TableCell className="text-center flex items-center gap-4 justify-center">
+                    <button className="text-indigo-600 hover:text-indigo-900 bg-white" onClick={() => router.push(`/${user.empid}/view`)}>
+                    <Eye className="h-5 w-5" />
+                    </button>
+                    <button onClick={() => router.push(`/${user.empid}`)} className="text-blue-600 hover:text-blue-900"><Edit className="h-5 w-5" /></button>
                     
                     {/* Delete Button with AlertDialog */}
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button className="bg-red-500 hover:bg-red-400" onClick={() => setEmpToDelete(user.empid)}>
-                          Delete
-                        </Button>
+                        <button className="text-red-600 hover:text-red-900" onClick={() => setEmpToDelete(user.empid)}>
+                        <Trash className="h-5 w-5" />
+                        </button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
@@ -218,7 +286,7 @@ export default function UserTable() {
                       </AlertDialogContent>
                     </AlertDialog>
 
-                    <Button onClick={() => handleReport({ empid: user.empid })} className="bg-green-500 hover:bg-green-400">Report</Button>
+                    <button onClick={() => handleReport({ empid: user.empid })} className="text-green-600 hover:text-green-900"> <FileText className="h-5 w-5" /></button>
                   </TableCell>
                 </TableRow>
               ))

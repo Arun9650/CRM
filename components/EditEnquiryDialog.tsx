@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input'; // Import the input component from Shadcn UI
+import { Edit } from 'lucide-react';
 
 interface Enquiry {
     enquiryid: number;
@@ -39,9 +40,9 @@ const EditEnquiryDialog: React.FC<EditEnquiryDialogProps> = ({ enquiry, onSave }
 
   return (
     <Dialog>
-      <DialogTrigger asChild>
+      <DialogTrigger asChild className='mx-4'>
         {/* This button will trigger the dialog */}
-        <Button>Edit</Button>
+        <button className="text-blue-600 hover:text-blue-900"><Edit className="h-5 w-5" /></button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
