@@ -54,6 +54,12 @@ const EmployeeDetailsPage: React.FC<EmployeeDetailsPageProps> = ({ params }) => 
     if (empid && searchTerm === '') {
       fetchEmployeeAndEnquiries(empid);
     }
+  }, [empid]);
+
+  useEffect(() => {
+    if (empid && searchTerm === '') {
+      fetchEnquiries(empid);
+    }
   }, [empid, currentPage, searchTerm]);
 
 
@@ -91,6 +97,21 @@ const EmployeeDetailsPage: React.FC<EmployeeDetailsPageProps> = ({ params }) => 
     } finally {
       setLoading(false);
     }
+  };
+  const fetchEnquiries = async (empid: string | string[]) => {
+    try {
+      const enquiriesResponse = await fetch(`/api/employee/${empid}/enquiries?page=${currentPage}&limit=${enquiriesPerPage}`);
+
+      if ( !enquiriesResponse.ok) {
+        throw new Error('Failed to fetch data');
+      }
+      const enquiriesData = await enquiriesResponse.json();
+
+      setEnquiries(enquiriesData.enquiries);
+      setTotalPages(Math.ceil(enquiriesData.total / enquiriesPerPage)); // Calculate total pages
+    } catch (error: any) {
+      setError(error.message);
+    } 
   };
 
   // Function to search the database if no results found locally
@@ -184,11 +205,11 @@ const EmployeeDetailsPage: React.FC<EmployeeDetailsPageProps> = ({ params }) => 
                 {filteredEnquiries.map((enquiry) => (
                   <tr key={enquiry.enquiryid} className="border-t">
                     <td className="px-4 py-2">{enquiry.enquiryid}</td>
-                    <td className="px-4 py-2 truncate">{enquiry.custname}</td>
-                    <td className="px-4 py-2">{enquiry.custphoneno}</td>
-                    <td className="px-4 py-2">{enquiry.custemailid}</td>
-                    <td className="px-4 py-2">{enquiry.custaddress}</td>
-                    <td className="px-4 py-2">{new Date(enquiry.entrytime).toLocaleString()}</td>
+                    <td className="px-4 py-2  text-nowrap">{enquiry.custname}</td>
+                    <td className="px-4 py-2 text-nowrap">{enquiry.custphoneno}</td>
+                    <td className="px-4 py-2 text-nowrap">{enquiry.custemailid}</td>
+                    <td className="px-4 py-2 overflow-y-auto text-nowrap max-w-40">{enquiry.custaddress}</td>
+                    <td className="px-4 py-2 overflow-y-auto text-nowrap ">{new Date(enquiry.entrytime).toLocaleString()}</td>
                     <td>
                       <Button onClick={() => {  openMap(enquiry.latitude, enquiry.longitude)}} className='bg-blue-500 hover:bg-blue-300'>Map</Button>
                     </td>
