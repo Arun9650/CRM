@@ -38,7 +38,7 @@ export async function GET(req: Request, { params }: { params: { empid: string } 
     worksheet.addRow([]);
 
     // Add header row for the enquiries
-    worksheet.addRow(['Enquiry ID', 'Customer Name', 'Phone Number', 'Email', 'Address', 'Latitude', 'Longitude', 'DOB', 'Entry Time']);
+    worksheet.addRow(['Enquiry ID', 'Customer Name', 'Phone Number', 'Email', 'Address', 'Latitude', 'Longitude', 'DOB', 'Entry Time', "Category"]);
 
     // Add each enquiry as a row in the worksheet
     employee.enquiries.forEach(enquiry => {
@@ -52,6 +52,7 @@ export async function GET(req: Request, { params }: { params: { empid: string } 
         enquiry.longitude,
         enquiry.DOB,
         enquiry.entrytime,
+        enquiry.category,
       ]);
     });
 

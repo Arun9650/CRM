@@ -292,75 +292,95 @@ const EmployeeDetailsPage: React.FC<EmployeeDetailsPageProps> = ({
 									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 										Entry time
 									</th>
-									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions </th>
-									
+									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+										Actions{' '}
+									</th>
 								</tr>
 							</thead>
 							<tbody>
-								{filteredEnquiries.map((enquiry) => (
-									<tr key={enquiry.enquiryid} className="border-t">
-										<td className="px-4 py-2 text-sm text-gray-900">{enquiry.enquiryid}</td>
-										<td className="px-4 py-2 text-sm text-gray-900 text-nowrap">
-											{enquiry.custname}
-										</td>
-										<td className="px-4 py-2 text-sm text-gray-900 text-nowrap">
-											{enquiry.custphoneno}
-										</td>
-										<td className="px-4 py-2 text-sm text-gray-900 text-nowrap overflow-y-auto max-w-40">
-											{enquiry.custemailid}
-										</td>
-										<td className="px-4 py-2 overflow-y-auto text-nowrap text-sm text-gray-900 max-w-40">
-											{enquiry.custaddress}
-										</td>
-										<td className="px-4 py-2 overflow-y-auto text-sm text-gray-900 text-nowrap ">
-											{new Date(enquiry.entrytime).toLocaleString()}
-										</td>
-										<td className=''>
-											<button
-												onClick={() => {
-													openMap(enquiry.latitude, enquiry.longitude);
-												}}
-												className="text-green-500 hover:text-blue-300"
-											>
-												<Map className="h-5 w-5" />
-											</button>
-										
-											<EditEnquiryDialog
-												enquiry={enquiry}
-												onSave={(updatedData) =>
-													editEnquiry(enquiry.enquiryid, updatedData)
-												}
-											/>
-										
-											{/* Delete Button with AlertDialog */}
-											<AlertDialog>
-												<AlertDialogTrigger asChild>
-													
-													<button className="text-red-600 hover:text-red-900" >
-                        <Trash className="h-5 w-5" />
-                        </button>
-												</AlertDialogTrigger>
-												<AlertDialogContent>
-													<AlertDialogHeader>
-														<AlertDialogTitle>Are you sure?</AlertDialogTitle>
-														<AlertDialogDescription>
-															This action cannot be undone. This will
-															permanently delete the employee.
-														</AlertDialogDescription>
-													</AlertDialogHeader>
-													<AlertDialogFooter>
-														<AlertDialogCancel>Cancel</AlertDialogCancel>
-														<AlertDialogAction
-															onClick={() => handleDelete(enquiry.enquiryid)}
-														>
-															Yes, Delete
-														</AlertDialogAction>
-													</AlertDialogFooter>
-												</AlertDialogContent>
-											</AlertDialog>
-										</td>
-									</tr>
-								))}
+								{filteredEnquiries.map((enquiry) => {
+									// Convert the UTC date string to a Date object
+									const date = new Date(enquiry.entrytime);
+
+									// Extract date components
+									const day = String(date.getUTCDate()).padStart(2, '0');
+									const month = String(date.getUTCMonth() + 1).padStart(2, '0'); // Months are 0-based
+									const year = date.getUTCFullYear();
+
+									// Extract time components
+									let hours = date.getUTCHours();
+									const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+									const ampm = hours >= 12 ? 'PM' : 'AM';
+									hours = hours % 12 || 12; // Convert 0 to 12 for 12 AM
+
+									// Format as 'dd/MM/yyyy hh:mm AM/PM'
+									const formattedDate = `${day}/${month}/${year} ${hours}:${minutes} ${ampm}`;
+									return (
+										<tr key={enquiry.enquiryid} className="border-t">
+											<td className="px-4 py-2 text-sm text-gray-900">
+												{enquiry.enquiryid}
+											</td>
+											<td className="px-4 py-2 text-sm text-gray-900 text-nowrap">
+												{enquiry.custname}
+											</td>
+											<td className="px-4 py-2 text-sm text-gray-900 text-nowrap">
+												{enquiry.custphoneno}
+											</td>
+											<td className="px-4 py-2 text-sm text-gray-900 text-nowrap overflow-y-auto max-w-40">
+												{enquiry.custemailid}
+											</td>
+											<td className="px-4 py-2 overflow-y-auto text-nowrap text-sm text-gray-900 max-w-40">
+												{enquiry.custaddress}
+											</td>
+											<td className="px-4 py-2 overflow-y-auto text-sm text-gray-900 text-nowrap ">
+												{formattedDate}
+											</td>
+											<td className="">
+												<button
+													onClick={() => {
+														openMap(enquiry.latitude, enquiry.longitude);
+													}}
+													className="text-green-500 hover:text-blue-300"
+												>
+													<Map className="h-5 w-5" />
+												</button>
+
+												<EditEnquiryDialog
+													enquiry={enquiry}
+													onSave={(updatedData) =>
+														editEnquiry(enquiry.enquiryid, updatedData)
+													}
+												/>
+
+												{/* Delete Button with AlertDialog */}
+												<AlertDialog>
+													<AlertDialogTrigger asChild>
+														<button className="text-red-600 hover:text-red-900">
+															<Trash className="h-5 w-5" />
+														</button>
+													</AlertDialogTrigger>
+													<AlertDialogContent>
+														<AlertDialogHeader>
+															<AlertDialogTitle>Are you sure?</AlertDialogTitle>
+															<AlertDialogDescription>
+																This action cannot be undone. This will
+																permanently delete the employee.
+															</AlertDialogDescription>
+														</AlertDialogHeader>
+														<AlertDialogFooter>
+															<AlertDialogCancel>Cancel</AlertDialogCancel>
+															<AlertDialogAction
+																onClick={() => handleDelete(enquiry.enquiryid)}
+															>
+																Yes, Delete
+															</AlertDialogAction>
+														</AlertDialogFooter>
+													</AlertDialogContent>
+												</AlertDialog>
+											</td>
+										</tr>
+									);
+								})}
 							</tbody>
 						</table>
 					)}

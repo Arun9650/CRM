@@ -39,6 +39,7 @@ model EnquiryDetails {
   empid       Int?
   empname     String?  @db.VarChar(50)
   DOB         DateTime?
+  category   String?  @db.VarChar(50)
 
   // Foreign key relation with EmpDetails
   EmpDetails  EmpDetails? @relation(fields: [empid], references: [empid], onDelete: Cascade)
@@ -58,6 +59,7 @@ model EnquiryLogs {
   enquiryid    Int?
   empid        Int?
   empname      String?  @db.VarChar(50)
+
 
   // Foreign key relations
   EnquiryDetails EnquiryDetails? @relation(fields: [enquiryid], references: [enquiryid], onDelete: Cascade)
